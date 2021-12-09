@@ -1,11 +1,13 @@
 //22.37587935396417
 //72.73548190542697
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Image, ActivityIndicator, SafeAreaView, ScrollView, FlatList, Alert, RefreshControl } from 'react-native';
+import { StyleSheet, Text, View, Image, ActivityIndicator, SafeAreaView, ScrollView, FlatList, Alert, RefreshControl,Linking } from 'react-native';
 import * as Location from 'expo-location';
+import Constants from 'expo-constants'
+import * as IntentLauncher from 'expo-intent-launcher'
 const REACT_APP_API_URL = 'https://api.openweathermap.org/data/2.5'
-//const REACT_APP_API_KEY = '6a5d69a68de78bb14d0a82afd064f3e0'
-const REACT_APP_API_KEY = 'a6e125fb1106bdf660a722513e644e3b'
+const REACT_APP_API_KEY = '6a5d69a68de78bb14d0a82afd064f3e0'
+//const REACT_APP_API_KEY = 'a6e125fb1106bdf660a722513e644e3b'
 //const REACT_APP_API_KEY = 'dabd43091243ee5e79e0ebb05c32db35'
 //const REACT_APP_API_KEY = '3e0927d5a13dcc4deaa2653db2c19ad5'
 
@@ -15,12 +17,28 @@ const App = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [city,setCity]= useState(null);
 
+  const pkg = Constants.manifest.releaseChannel
+  ? Constants.manifest.android.package 
+  : 'host.exp.exponent'
+  const toSetting = () => {
+  if (Platform.OS === 'ios') {
+    Linking.openURL('app-settings:')
+  } else {
+    IntentLauncher.startActivityAsync(
+      IntentLauncher.ACTION_APPLICATION_DETAILS_SETTINGS,
+      { data: 'package:' + pkg },
+    )
+  }
+}
   const loadForecast = async () => {
     setRefreshing(true);
-
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission to access location was denied');
+      Alert.alert('Error',
+                  'Permission to access location was denied',
+                [
+                  { text: 'Allow', onPress: toSetting },
+                ],);
     }
 
     let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
@@ -65,6 +83,7 @@ const App = () => {
             refreshing={refreshing}
           />}
       >
+        <Text>&nbsp;</Text>
         <Text style={styles.title}>{city}</Text>
         <View style={styles.current}>
           <Image
@@ -134,11 +153,12 @@ const styles = StyleSheet.create({
     fontSize: 24,
     marginVertical: 12,
     marginLeft: 4,
-    color: '#e96e50',
+    color: '#000080',
+    fontWeight:"bold"
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#A8CCD7',
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
